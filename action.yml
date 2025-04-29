@@ -1,0 +1,28 @@
+name: pew-actions/svn-to-git
+description: Mirror SVN and GIT repositories
+
+inputs:
+  svn-url:
+    description: 'URL to the SVN repository'
+    required: true
+  username:
+    description: 'Username for SVN'
+    required: true
+  password:
+    description: 'Password for SVN'
+    required: true
+  fingerprint:
+    description: 'Fingerprint of the SVN server'
+    required: true
+  path:
+    description: 'Path to Git repository'
+  git-username:
+    description: 'Username for git commits'
+    default: 'Build Server'
+  git-email:
+    description: 'Email for git commits'
+    default: 'buildserver@playeverware.com'
+
+runs:
+  using: node20
+  main: dist/index.js
