@@ -153,39 +153,41 @@ function populateSvnConfig(svnUrl, configDir) {
         if (!password) {
             throw Error('No password passed to action');
         }
-        const fingerprint = core.getInput('fingerprint');
-        if (!fingerprint) {
-            throw new Error('No fingerprint passed to action');
-        }
         const realm = urlToRealm(svnUrl);
         const realmName = yield getRealmName(svnUrl);
         const fullRealm = realmName ? `<${realm}> ${realmName}` : realm;
-        const rawCert = yield getCert(svnUrl);
-        const certDer = Buffer.from(rawCert, 'base64');
-        const sha1 = (0, crypto_1.createHash)("sha1").update(certDer).digest("hex").toUpperCase();
-        const serverFingerprint = (_a = sha1.match(/.{2}/g)) === null || _a === void 0 ? void 0 : _a.join(':');
-        if (serverFingerprint !== fingerprint) {
-            throw new Error(`Server fingerprint mismatch: ${serverFingerprint} != ${fingerprint}`);
+        if (svnUrl.protocol === 'https:') {
+            const fingerprint = core.getInput('fingerprint');
+            if (!fingerprint) {
+                throw new Error('No fingerprint passed to action');
+            }
+            const rawCert = yield getCert(svnUrl);
+            const certDer = Buffer.from(rawCert, 'base64');
+            const sha1 = (0, crypto_1.createHash)("sha1").update(certDer).digest("hex").toUpperCase();
+            const serverFingerprint = (_a = sha1.match(/.{2}/g)) === null || _a === void 0 ? void 0 : _a.join(':');
+            if (serverFingerprint !== fingerprint) {
+                throw new Error(`Server fingerprint mismatch: ${serverFingerprint} != ${fingerprint}`);
+            }
+            // build server SSL config
+            const sslConfig = makeSvnConfig({
+                ascii_cert: rawCert,
+                failures: '12',
+                "svn:realmstring": realm,
+            });
+            const md5 = (0, crypto_1.createHash)('md5');
+            md5.update(realm, 'utf8');
+            const filename = md5.digest('hex');
+            yield fs_1.promises.writeFile(path.join(sslServer, filename), sslConfig, 'utf8');
         }
-        // build server SSL config
-        const sslConfig = makeSvnConfig({
-            ascii_cert: rawCert,
-            failures: '12',
-            "svn:realmstring": realm,
-        });
-        let md5 = (0, crypto_1.createHash)('md5');
-        md5.update(realm, 'utf8');
-        let filename = md5.digest('hex');
-        yield fs_1.promises.writeFile(path.join(sslServer, filename), sslConfig, 'utf8');
         const serverConfig = makeSvnConfig({
             passtype: 'wincrypt',
             username: username,
             password: addon.encrypt(password),
             'svn:realmstring': fullRealm,
         });
-        md5 = (0, crypto_1.createHash)('md5');
+        const md5 = (0, crypto_1.createHash)('md5');
         md5.update(fullRealm, 'utf8');
-        filename = md5.digest('hex');
+        const filename = md5.digest('hex');
         yield fs_1.promises.writeFile(path.join(simpleDir, filename), serverConfig, 'utf8');
         const config = `
 [global]
