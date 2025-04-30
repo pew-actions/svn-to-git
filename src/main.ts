@@ -230,7 +230,7 @@ async function run(): Promise<void> {
 
     core.startGroup('Get most recent SVN commit')
       let svnCommitOutput = ''
-      await exec.exec('git', ['log', '-1', 'origin/svn/trunk'], {
+      await exec.exec('git', ['log', '-1', 'origin/svn/trunk', '--grep', 'git-svn-id'], {
         listeners: {
           stdout: (data: Buffer) => {
             svnCommitOutput += data.toString()

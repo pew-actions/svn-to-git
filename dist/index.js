@@ -242,7 +242,7 @@ function run() {
             core.endGroup();
             core.startGroup('Get most recent SVN commit');
             let svnCommitOutput = '';
-            yield exec.exec('git', ['log', '-1', 'origin/svn/trunk'], {
+            yield exec.exec('git', ['log', '-1', 'origin/svn/trunk', '--grep', 'git-svn-id'], {
                 listeners: {
                     stdout: (data) => {
                         svnCommitOutput += data.toString();
