@@ -261,7 +261,7 @@ function run() {
             yield exec.exec('git', ['svn', 'fetch'], {
                 env: Object.assign(Object.assign({}, process.env), { SVN_CONIFG_DIR: configDir })
             });
-            yield exec.exec('git', ['merge', '--no-ff', 'git-svn']);
+            yield exec.exec('git', ['merge', '--ff-only', 'git-svn']);
             core.endGroup();
             core.startGroup('Merge svn/trunk into svn/staging');
             yield exec.exec('git', ['checkout', 'svn/staging']);

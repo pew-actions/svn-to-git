@@ -255,7 +255,7 @@ async function run(): Promise<void> {
         }
       })
 
-      await exec.exec('git', ['merge', '--no-ff', 'git-svn'])
+      await exec.exec('git', ['merge', '--ff-only', 'git-svn'])
     core.endGroup()
 
     core.startGroup('Merge svn/trunk into svn/staging')
