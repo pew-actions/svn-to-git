@@ -58,6 +58,7 @@ const tls = __importStar(__nccwpck_require__(4756));
 const path = __importStar(__nccwpck_require__(6928));
 const os = __importStar(__nccwpck_require__(857));
 const https = __importStar(__nccwpck_require__(5692));
+const http = __importStar(__nccwpck_require__(8611));
 const exec = __importStar(__nccwpck_require__(5236));
 const uuid_1 = __nccwpck_require__(1914);
 const crypto_1 = __nccwpck_require__(6982);
@@ -96,12 +97,13 @@ function getRealmName(uri) {
         return new Promise((resolve, reject) => {
             const options = {
                 hostname: uri.hostname,
-                port: uri.port || 443,
+                port: uri.port || (uri.protocol === 'https:' ? 443 : 80),
                 path: uri.pathname,
                 method: 'GET',
                 rejectUnauthorized: false,
             };
-            const req = https.request(options, (res) => {
+            const reqFunc = (uri.protocol === 'https:' ? https.request : http.request);
+            const req = reqFunc(options, (res) => {
                 const auth = res.headers['www-authenticate'];
                 if (auth && typeof auth === 'string') {
                     const match = auth.match(/realm="([^"]+)"/);

@@ -4,6 +4,7 @@ import * as tls from 'tls'
 import * as path from 'path'
 import * as os from 'os'
 import * as https from 'https'
+import * as http from 'http'
 import * as exec from '@actions/exec'
 import { v4 as uuidv4 } from 'uuid'
 import { X509Certificate } from "@peculiar/x509"
@@ -52,13 +53,15 @@ async function getRealmName(uri: URL): Promise<string | null> {
   return new Promise((resolve, reject) => {
     const options = {
       hostname: uri.hostname,
-      port: uri.port || 443,
+      port: uri.port || (uri.protocol === 'https:' ? 443 : 80),
       path: uri.pathname,
       method: 'GET',
       rejectUnauthorized: false,
     }
 
-    const req = https.request(options, (res) => {
+    const reqFunc = (uri.protocol === 'https:' ? https.request : http.request)
+
+    const req = reqFunc(options, (res) => {
         const auth = res.headers['www-authenticate']
         if (auth && typeof auth === 'string') {
           const match = auth.match(/realm="([^"]+)"/)
